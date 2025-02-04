@@ -1,0 +1,35 @@
+services:
+  sglang:
+    image: lmsysorg/sglang:latest
+    container_name: sglang
+    volumes:
+      # mount host directory to container
+      # change the path [D:\sglang] to your directory where stored models
+      - D:\sglang:/sgl-workspace/models
+    
+    # restart policy for container if it stops
+    # uncomment following line if you want to restart the container
+    # restart: always
+  
+    # publish 30000 port to host
+    ports:
+      - 30000:30000
+
+    entrypoint: python3 -m sglang.launch_server
+    command:
+      --model-path /sgl-workspace/models/DeepSeek-R1-Distill-Qwen-7B
+      --host 0.0.0.0
+      --port 30000
+    ulimits:
+      memlock: -1
+      stack: 67108864
+    ipc: host
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:30000/health || exit 1"]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['0']
+              capabilities: [gpu]
